@@ -1,6 +1,7 @@
 # Project specific
 dwh.cfg
 todo.txt
+sparkify/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
