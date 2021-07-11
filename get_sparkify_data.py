@@ -89,4 +89,5 @@ class S3Loader:
 
 if __name__ == "__main__":
     s3 = S3Loader()
-    s3.download_all_files('udacity-dend', 'sparkify')
+    # s3.download_all_files('udacity-dend', 'sparkify')
+    s3.list_s3_objects('udacity-dend')
