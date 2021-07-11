@@ -1,3 +1,7 @@
+# Project specific
+dwh.cfg
+todo.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
