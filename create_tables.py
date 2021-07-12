@@ -7,7 +7,7 @@ config = configparser.ConfigParser()
 config.read_file(open('dwh.cfg'))
 
 DWH_HOST            = config.get('CLUSTER', 'DWH_HOST')
-DWH_DB              = config.get('CLUSTER', 'DWH_DB')  
+DWH_DB              = config.get('CLUSTER', 'DWH_DB')
 DWH_DB_USER         = config.get('CLUSTER', 'DWH_DB_USER')
 DWH_DB_PASSWORD     = config.get('CLUSTER', 'DWH_DB_PASSWORD')
 DWH_PORT            = config.get('CLUSTER', 'DWH_PORT')
