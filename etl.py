@@ -1,6 +1,7 @@
 import configparser
 import psycopg2
-from sql_queries import staging_events_copy, staging_songs_copy, insert_analytical_table_queries
+from sql_queries import staging_events_copy, staging_songs_copy, \
+    insert_analytical_table_queries, songplays_upsert
 import time
 
 config = configparser.ConfigParser()
@@ -32,6 +33,14 @@ def insert_analytical_data(cur, conn):
         cur.execute(query)
         conn.commit()
 
+        
+
+def upsert_songplay_data(cur, conn):
+    cur.execute(songplays_upsert)
+    conn.commit()
+    cur.execute("CALL songplays_upsert();")
+    conn.commit()
+
 def main():
     conn = psycopg2.connect(f"""
         host={DWH_HOST} dbname={DWH_DB} user={DWH_DB_USER} 
@@ -53,6 +62,7 @@ def main():
     # execution_time = time.time() - start_time
     # print(f"Finished copying song data. Total time: {execution_time}")
     
+    upsert_songplay_data(cur, conn)
     insert_analytical_data(cur, conn)
 
     conn.close()

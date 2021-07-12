@@ -52,7 +52,7 @@ songplay_table_create = ("""
     CREATE TABLE IF NOT EXISTS songplays (
         songplay_id             BIGINT IDENTITY(0, 1)   NOT NULL
         , start_time            BIGINT                  NOT NULL
-        , user_id               INTEGER                 NOT NULL
+        , user_id               INTEGER                 
         , level                 VARCHAR(10)             NOT NULL
         , song_id               VARCHAR(30)             
         , artist_id             VARCHAR(30)             
@@ -129,7 +129,71 @@ staging_songs_copy = ("""
 """)
 
 
-# FINAL TABLES
+# STORED PROCEDURES for ANALYTICAL TABLE UPSERTS
+songplays_upsert = ("""
+    CREATE OR REPLACE PROCEDURE songplays_upsert()
+    AS $$
+    BEGIN
+        DROP TABLE IF EXISTS songplays_stage;
+    
+        CREATE TEMP TABLE songplays_stage (LIKE songplays  INCLUDING DEFAULTS); 
+
+        INSERT INTO songplays_stage(
+                start_time
+                , user_id
+                , level
+                , song_id
+                , artist_id
+                , session_id
+                , location
+                , user_agent) 
+                (SELECT
+                    se.ts
+                    , se.user_id
+                    , se.level
+                    , ss.song_id
+                    , ss.artist_id
+                    , se.session_id
+                    , se.location
+                    , se.user_agent
+                FROM staging_events se
+                LEFT JOIN staging_songs ss ON ss.title = se.song
+                WHERE page = 'NextSong'
+                );
+
+        DELETE FROM songplays  
+        USING songplays_stage 
+        WHERE songplays.session_id = songplays_stage.session_id
+        AND songplays.start_time = songplays_stage.start_time;
+        
+        INSERT INTO songplays(
+                start_time
+                , user_id
+                , level
+                , song_id
+                , artist_id
+                , session_id
+                , location
+                , user_agent) 
+                (SELECT
+                    ss.start_time
+                    , ss.user_id
+                    , ss.level
+                    , ss.song_id
+                    , ss.artist_id
+                    , ss.session_id
+                    , ss.location
+                    , ss.user_agent
+                FROM songplays_stage ss
+                );
+        
+        DROP TABLE songplays_stage;
+    END;
+    $$ LANGUAGE plpgsql;
+""")
+
+
+# ANALYTICAL TABLES
 songplay_table_insert = ("""
     INSERT INTO songplays(
         start_time
@@ -158,13 +222,17 @@ songplay_table_insert = ("""
 user_table_insert = ("""
     INSERT INTO users(
         SELECT
-            DISTINCT se.user_id
-            , se.first_name
-            , se.last_name
-            , se.gender
-            , se.level
-        FROM staging_events se
-        WHERE user_id IS NOT NULL
+            a.user_id
+            , a.first_name
+            , a.last_name
+            , a.gender
+            , a.level
+        FROM staging_events a
+        INNER JOIN (
+            SELECT user_id, MAX(ts) as ts
+            FROM staging_events
+            GROUP BY user_id
+        ) b ON a.user_id = b.user_id AND a.ts = b.ts
         )
 """)
 
@@ -197,7 +265,7 @@ artist_table_insert = ("""
 time_table_insert = ("""
     INSERT INTO time(
         SELECT
-            ts AS start_time
+            DISTINCT ts AS start_time
             , EXTRACT(hour FROM timestamp 'epoch' + ts/1000 * interval '1 second') AS hour
             , EXTRACT(day FROM timestamp 'epoch' + ts/1000 * interval '1 second') AS day
             , EXTRACT(week FROM timestamp 'epoch' + ts/1000 * interval '1 second') AS week
@@ -220,5 +288,5 @@ create_analytical_table_queries = [songplay_table_create, user_table_create,
                                    song_table_create, artist_table_create, time_table_create]
 drop_analytical_table_queries = [songplay_table_drop, user_table_drop, song_table_drop, 
                                  artist_table_drop, time_table_drop]
-insert_analytical_table_queries = [songplay_table_insert, user_table_insert, 
+insert_analytical_table_queries = [user_table_insert, 
                                    song_table_insert, artist_table_insert, time_table_insert]
