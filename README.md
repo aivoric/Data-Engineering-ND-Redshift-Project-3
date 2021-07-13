@@ -33,7 +33,7 @@ When you run the full job this will do all of the following tasks in just under 
 5. Run test queries
 6. Remove all infrastructure
 
-If you want to run the job and not destoy the infrastrucure at the end, then open ```etl.py``` and
+If you want to run the job and not destroy the infrastrucure at the end, then open ```etl.py``` and
 set ```destroy=False```.
 
 
