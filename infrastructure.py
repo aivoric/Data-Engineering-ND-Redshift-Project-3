@@ -25,6 +25,12 @@ DWH_DB_PASSWORD             = config.get('CLUSTER', 'DWH_DB_PASSWORD')
 DWH_PORT                    = config.get('CLUSTER', 'DWH_PORT')
 
 class InfrastructureManager():
+    """
+    1. Creates infrastructure (AWS role, Redshift cluster)
+    2. Tears down infrastructure
+    3. Updates config file based on infrastructure status
+    4. Contains various helper methods to get infrastructure information
+    """
     def __init__(self):
         self.ec2 = boto3.resource('ec2', region_name=REGION,
                         aws_access_key_id=KEY,
@@ -47,6 +53,9 @@ class InfrastructureManager():
         self.cluster_host = ""
         
     def set_cluster_status(self):
+        """
+        Updates the current status of the Redshift cluster.
+        """
         try:
             cluster_status = self.redshift.describe_clusters(
                 ClusterIdentifier=DWH_CLUSTER_IDENTIFIER)['Clusters'][0]['ClusterStatus']
@@ -56,6 +65,9 @@ class InfrastructureManager():
             self.cluster_status = "No Cluster"
         
     def print_cluster_information(self):
+        """
+        Prints all the main information about the cluster to the console.
+        """
         try:
             props = self.redshift.describe_clusters(
                 ClusterIdentifier=DWH_CLUSTER_IDENTIFIER)['Clusters'][0]
@@ -67,10 +79,16 @@ class InfrastructureManager():
             logging.warning("Redshift Cluster doesn't exist.")
             
     def get_role_arn(self):
+        """
+        Returns the Arn of the created AWS IAM Role.
+        """
         roleArn = self.iam.get_role(RoleName=DWH_ROLE_NAME)['Role']['Arn']
         return roleArn
 
     def create_role(self):
+        """
+        Creates an IAM Role.
+        """
         try:
             logging.info('Creating role...')
             self.iam.create_role(
@@ -90,6 +108,9 @@ class InfrastructureManager():
             logging.warning(f"Failed to create a role.")
             
     def attach_policy_to_role(self):
+        """
+        Attaches a S3ReadOnly policy to the created IAM role.
+        """
         try:
             logging.info("Attaching policy to role...")
             response = self.iam.attach_role_policy(RoleName=DWH_ROLE_NAME
@@ -133,6 +154,9 @@ class InfrastructureManager():
             logging.warning(f"Failed to start cluster creation.")
     
     def open_incoming_tcp_port(self):
+        """
+        Opens Redshift to the entire world!
+        """
         try:
             logging.info("Opening incoming TCP port...")
             props = self.redshift.describe_clusters(ClusterIdentifier=DWH_CLUSTER_IDENTIFIER)['Clusters'][0]
@@ -151,6 +175,9 @@ class InfrastructureManager():
             logging.warning(f"{e}")
     
     def update_config_file(self):
+        """
+        Updates the dwh.cfg file with Redshift host and Role Arn information.
+        """
         try:
             logging.info("Updating config file with cluster settings...")
             props = self.redshift.describe_clusters(
@@ -169,6 +196,9 @@ class InfrastructureManager():
             logging.warning(f"{e}")
 
     def reset_config_file(self):
+        """
+        Resets dwh.cfg file to remove the Redshift host and Role Arn information.
+        """
         try:
             logging.info("Resettinc config file...")
             
@@ -182,6 +212,9 @@ class InfrastructureManager():
             logging.warning(f"{e}")
             
     def drop_redshift(self):
+        """
+        Tearsdown Redshift cluster.
+        """
         try:
             logging.info("Deleting redshift cluster...")
             self.redshift.delete_cluster(ClusterIdentifier=DWH_CLUSTER_IDENTIFIER,  
@@ -198,6 +231,9 @@ class InfrastructureManager():
             logging.warning(f"Failed to start cluster deletion.")
             
     def drop_role_policy(self):
+        """
+        Removes the S3 Read policy from the IAM Role.
+        """
         try:
             logging.info("Detaching policy from role...")
             self.iam.detach_role_policy(RoleName=DWH_ROLE_NAME, 
@@ -206,7 +242,10 @@ class InfrastructureManager():
         except Exception as e:
             logging.warning(f"Failed to start cluster deletion.")
             
-    def drop_role(self):        
+    def drop_role(self):     
+        """
+        Removes the IAM Role.
+        """   
         try:
             logging.info("Deleting role...")
             self.iam.delete_role(RoleName=DWH_ROLE_NAME)

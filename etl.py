@@ -8,6 +8,9 @@ from data_manager import ETLManager
 logging.basicConfig(level=logging.INFO)
 
 def open_db_connection():
+    """
+    Creates a connection to Redshift based on params in the config file.
+    """
     config = configparser.ConfigParser()
     config.read_file(open('dwh.cfg'))
 
@@ -29,10 +32,30 @@ def open_db_connection():
         logging.warning(f"Could not connect to Redshift. Error: {e}")
         
 def close_db_connection(conn):
+    """
+    Closes Redshift connection.
+    """
     conn.close()
     logging.info("Redshift connection closed.")
 
 def main(destroy):
+    """
+    Imports 3 helper classes which do the heavy lifting
+    1. InfrastructureManager for creating and tearing down infrastructure.
+    2. RedshiftManager for creating and dropping tables in Redshift.
+    3. ETLManager for importing S3 data and transforming it in Redshift.
+    
+    This is the main function of this program. By running main() you
+    will create all your infrastructure, tables, complete the ETL, and
+    then drop the infrastructure if destroy = True.
+    ...
+
+    Attributes
+    ----------
+    destroy : boolean
+        if set to true then all the infrastructure will be deleted at the end of the ETL
+    """
+    
     logging.info('Starting job.')
     if destroy:
         logging.info('Destroy setting is activated. \
@@ -82,9 +105,6 @@ def main(destroy):
     logging.info('Most active users:')
     logging.info(etl.get_top_users())
     
-    # Close database connection
-    close_db_connection(conn)
-    
     # Destroy everything if required
     if destroy:
         # Drop Redshift tables
@@ -101,8 +121,15 @@ def main(destroy):
         infrastructure.reset_config_file()
         logging.info('Finished infrustructure teardown!')
     
+    # Close database connection
+    close_db_connection(conn)
+    
     logging.info('Job complete.')
 
 if __name__ == "__main__":
+    """
+    Set destroy = True so that all infrastructure is removed
+    at the end of the ETL.
+    """
     destroy=True
     main(destroy)
