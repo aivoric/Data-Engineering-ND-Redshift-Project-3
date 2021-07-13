@@ -1,3 +1,5 @@
+![](redshift_image.png)
+
 # Project: Redshift Data ETL from S3
 
 This project was completed on 13th July 2021.
