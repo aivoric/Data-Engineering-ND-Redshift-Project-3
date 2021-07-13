@@ -24,7 +24,7 @@ DWH_DB_USER                 = config.get('CLUSTER', 'DWH_DB_USER')
 DWH_DB_PASSWORD             = config.get('CLUSTER', 'DWH_DB_PASSWORD')
 DWH_PORT                    = config.get('CLUSTER', 'DWH_PORT')
 
-class AWSInfrastructure():
+class InfrastructureManager():
     def __init__(self):
         self.ec2 = boto3.resource('ec2', region_name=REGION,
                         aws_access_key_id=KEY,
@@ -156,8 +156,8 @@ class AWSInfrastructure():
             props = self.redshift.describe_clusters(
                 ClusterIdentifier=DWH_CLUSTER_IDENTIFIER)['Clusters'][0]
             
-            self.cluster_arn = props['Endpoint']['Address']
-            self.cluster_host = props['IamRoles'][0]['IamRoleArn']
+            self.cluster_host = props['Endpoint']['Address']
+            self.cluster_arn = props['IamRoles'][0]['IamRoleArn']
             
             config.set('CLUSTER', 'DWH_HOST', self.cluster_host)
             config.set('ROLE', 'DWH_ROLE_ARN', self.cluster_arn)
@@ -215,7 +215,7 @@ class AWSInfrastructure():
             logging.warning(f"Failed to delete role.")
 
 def main():
-    infrastructure = AWSInfrastructure()
+    infrastructure = InfrastructureManager()
 
 if __name__ == "__main__":
     main()

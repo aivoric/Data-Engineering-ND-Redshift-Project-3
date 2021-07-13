@@ -276,6 +276,39 @@ time_table_insert = ("""
         )
 """)
 
+read_total_users = ("""
+    SELECT
+        COUNT(*) as total_users
+    FROM users
+""")
+
+read_total_songs = ("""
+    SELECT
+        COUNT(*) as total_songs
+    FROM songs
+""")
+
+read_popular_songs = ("""
+    SELECT
+        song_id,
+        COUNT(*) as total_songplays
+    FROM songplays
+    WHERE song_id IS NOT NULL
+    GROUP BY 1
+    ORDER BY 2 DESC
+    LIMIT 5
+""")
+
+read_top_active_users = ("""
+    SELECT
+        user_id,
+        COUNT(*) as total_songplays
+    FROM songplays
+    GROUP BY 1
+    ORDER BY 2 DESC
+    LIMIT 5
+""")
+
 # QUERY LISTS
 # -----------------------------------
 
@@ -288,5 +321,6 @@ create_analytical_table_queries = [songplay_table_create, user_table_create,
                                    song_table_create, artist_table_create, time_table_create]
 drop_analytical_table_queries = [songplay_table_drop, user_table_drop, song_table_drop, 
                                  artist_table_drop, time_table_drop]
-insert_analytical_table_queries = [user_table_insert, 
-                                   song_table_insert, artist_table_insert, time_table_insert]
+insert_analytical_table_queries = [user_table_insert, song_table_insert, 
+                                   artist_table_insert, time_table_insert]
+read_analytical_tables_queries = [read_popular_songs, read_top_active_users]

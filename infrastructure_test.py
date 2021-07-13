@@ -1,10 +1,10 @@
-from infrastructure import AWSInfrastructure;
+from infrastructure import InfrastructureManager
 import logging
 
 logging.basicConfig(level=logging.INFO)
 
 def main():
-    infrastructure = AWSInfrastructure()
+    infrastructure = InfrastructureManager
     
     logging.info('Starting infrastructure creation...')
     infrastructure.create_role()
