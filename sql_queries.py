@@ -51,7 +51,7 @@ staging_songs_table_create = ("""
 songplay_table_create = ("""
     CREATE TABLE IF NOT EXISTS songplays (
         songplay_id             BIGINT IDENTITY(0, 1)   NOT NULL  
-        , start_time            BIGINT                  NOT NULL  SORTKEY  DISTKEY
+        , start_time            BIGINT                  NOT NULL
         , user_id               INTEGER                 
         , level                 VARCHAR(10)             NOT NULL
         , song_id               VARCHAR(30)             
@@ -66,7 +66,7 @@ songplay_table_create = ("""
 
 user_table_create = ("""
     CREATE TABLE IF NOT EXISTS users (
-        user_id                 INTEGER                 NOT NULL  SORTKEY 
+        user_id                 INTEGER                 NOT NULL
         , first_name            VARCHAR(50)             NOT NULL
         , last_name             VARCHAR(100)            NOT NULL
         , gender                VARCHAR(1)              NOT NULL
@@ -78,7 +78,7 @@ user_table_create = ("""
 
 song_table_create = ("""
     CREATE TABLE IF NOT EXISTS songs (
-        song_id                 VARCHAR(30)             NOT NULL  SORTKEY
+        song_id                 VARCHAR(30)             NOT NULL
         , title                 VARCHAR(300)            NOT NULL
         , artist_id             VARCHAR(30)             NOT NULL
         , year                  SMALLINT                NOT NULL
@@ -90,7 +90,7 @@ song_table_create = ("""
 
 artist_table_create = ("""
     CREATE TABLE IF NOT EXISTS artists (
-        artist_id               VARCHAR(30)             NOT NULL  SORTKEY
+        artist_id               VARCHAR(30)             NOT NULL
         , name                  VARCHAR(300)            NOT NULL
         , location              VARCHAR(200)
         , latitude              FLOAT
@@ -102,7 +102,7 @@ artist_table_create = ("""
 
 time_table_create = ("""
     CREATE TABLE IF NOT EXISTS time (
-        start_time              BIGINT                  NOT NULL  SORTKEY  DISTKEY
+        start_time              BIGINT                  NOT NULL
         , hour                  SMALLINT                NOT NULL
         , day                   SMALLINT                NOT NULL
         , week                  SMALLINT                NOT NULL
